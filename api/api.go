@@ -3,6 +3,7 @@ package api
 import (
 	"hnews/Godeps/_workspace/src/github.com/gin-gonic/gin"
 	"hnews/services"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -31,11 +32,19 @@ func (*API) StartAPI() {
 		}
 
 		news := services.ReadNews(from, to)
-		for _, aNews := range news {
-			c.JSON(http.StatusOK, aNews)
-		}
+		c.JSON(200, gin.H{"news": news})
 	})
 
-	// Get Heroku port
-	r.Run(":" + os.Getenv("PORT")) // listen and serve on 0.0.0.0:8080
+	r.Run(":" + getPort()) // listen and serve on 0.0.0.0:8080
+}
+
+// Tries to get Heroku port otherwise return default 8080
+func getPort() string {
+	port := os.Getenv("PORT")
+	log.Println(port)
+	if port != "" {
+		return port
+	} else {
+		return "8080"
+	}
 }
