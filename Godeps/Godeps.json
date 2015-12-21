@@ -6,6 +6,15 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/PuerkitoBio/goquery",
+			"Comment": "v0.3.2-80-g417cce8",
+			"Rev": "417cce822c7b9a379df5824be95228d177c5698b"
+		},
+		{
+			"ImportPath": "github.com/andybalholm/cascadia",
+			"Rev": "3ad29d1ad1c4f2023e355603324348cf1f4b2d48"
+		},
+		{
 			"ImportPath": "github.com/boltdb/bolt",
 			"Comment": "v1.1.0-30-g6d4e6a3",
 			"Rev": "6d4e6a3ead833ba64932c56549bb8623afea0335"
@@ -21,12 +30,37 @@
 			"Rev": "d8c2ee11cb0d0f16eb1e58b68497058b580eada6"
 		},
 		{
+			"ImportPath": "github.com/manucorporat/sse",
+			"Rev": "fe6ea2c8e398672518ef204bf0fbd9af858d0e15"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Rev": "3dac7b4f76f6e17fb39b768b89e3783d16e237fe"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-isatty",
+			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
+		},
+		{
 			"ImportPath": "github.com/yhat/scrape",
 			"Rev": "47d070048ae58bf228dfdfcfaf1d1c6abc00620e"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
+		},
+		{
 			"ImportPath": "golang.org/x/net/html",
 			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
+		},
+		{
+			"ImportPath": "gopkg.in/bluesuncorp/validator.v5",
+			"Comment": "v5.12",
+			"Rev": "d5acf1dac43705f8bfbb71d878e290e2bed3950b"
 		}
 	]
 }

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
+	"hnews/Godeps/_workspace/src/github.com/PuerkitoBio/goquery"
 	"hnews/Godeps/_workspace/src/github.com/headzoo/surf/errors"
 	"hnews/Godeps/_workspace/src/github.com/headzoo/surf/jar"
 )

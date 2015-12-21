@@ -1,7 +1,7 @@
 package jar
 
 import (
-	"github.com/PuerkitoBio/goquery"
+	"hnews/Godeps/_workspace/src/github.com/PuerkitoBio/goquery"
 	"net/http"
 )
 
