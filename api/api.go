@@ -4,6 +4,7 @@ import (
 	"hnews/Godeps/_workspace/src/github.com/gin-gonic/gin"
 	"hnews/services"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -35,5 +36,6 @@ func (*API) StartAPI() {
 		}
 	})
 
-	r.Run(":8080") // listen and serve on 0.0.0.0:8080
+	// Get Heroku port
+	r.Run(":" + os.Getenv("PORT")) // listen and serve on 0.0.0.0:8080
 }

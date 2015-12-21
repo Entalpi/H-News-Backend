@@ -1,1 +1,1 @@
-web: go run hnews.go
+web: main
