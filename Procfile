@@ -1,1 +1,1 @@
-web: hnews
+web: main
