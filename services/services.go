@@ -14,6 +14,10 @@ const (
 	Debug = true
 )
 
+var (
+	db, err = bolt.Open("a.db", 0644, nil)
+)
+
 /** Login service **/
 func Login(username string, password string) bool {
 	bow := surf.NewBrowser()
@@ -38,18 +42,15 @@ func Login(username string, password string) bool {
 /** Database Service **/
 // Ints need to be a defined size since binary.Read does not support just 'int'
 type News struct {
+	ID       int32     `json:"id"`
 	Rank     int32     `json:"rank"`
 	Title    string    `json:"title"`
 	Link     string    `json:"link"`
 	Author   string    `json:"author"`
 	Points   int32     `json:"points"`
 	Time     time.Time `json:"time"`
-	Comments int32     `json:"comments"`
+	Comments int32     `json:"comments"` // Number of comments on the News
 }
-
-var (
-	db, err = bolt.Open("a.db", 0644, nil)
-)
 
 func ReadNews(from int, to int) []News {
 	var news []News
@@ -77,11 +78,14 @@ func ReadNews(from int, to int) []News {
 			var comments int32
 			binary.Read(bytes.NewReader(b.Get([]byte("comments"))), binary.LittleEndian, &comments)
 
+			var id int32
+			binary.Read(bytes.NewReader(b.Get([]byte("id"))), binary.LittleEndian, &id)
+
 			if err != nil {
 				log.Println("ReadNews:", err)
 				return err
 			}
-			news = append(news, News{rank, title, link, author, points, time.Unix(t, 0), comments})
+			news = append(news, News{id, rank, title, link, author, points, time.Unix(t, 0), comments})
 		}
 		return nil
 	})
@@ -117,6 +121,10 @@ func SaveNews(news []News) {
 			binary.Write(&c, binary.LittleEndian, aNews.Comments)
 			b.Put([]byte("comments"), []byte(c.Bytes()))
 
+			var id bytes.Buffer
+			binary.Write(&id, binary.LittleEndian, aNews.ID)
+			b.Put([]byte("id"), []byte(id.Bytes()))
+
 			if err != nil {
 				log.Println("Err SaveNews:", err)
 				return err
@@ -124,4 +132,15 @@ func SaveNews(news []News) {
 		}
 		return nil
 	})
+}
+
+type Comment struct {
+	ParentID int32     `json:"id"` // ID of the News or parent Comment
+	Time     time.Time `json:"time"`
+	Author   string    `json:"author"`
+	Text     string    `json:"text"`
+}
+
+func SaveComments(comments []Comment) {
+
 }
