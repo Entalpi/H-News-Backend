@@ -32,7 +32,18 @@ func (*API) StartAPI() {
 		}
 
 		news := services.ReadNews(from, to)
-		c.JSON(200, gin.H{"news": news})
+		c.JSON(http.StatusOK, gin.H{"news": news})
+	})
+
+	r.GET("/v1/comments", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Query("newsid"))
+		if err != nil {
+			c.String(http.StatusBadRequest, "Not a valid item id")
+			return
+		}
+
+		comments := services.ReadComments(id)
+		c.JSON(http.StatusOK, gin.H{"comments": comments})
 	})
 
 	r.Run(":" + getPort()) // listen and serve on 0.0.0.0:8080

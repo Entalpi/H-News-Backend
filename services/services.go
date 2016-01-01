@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"hnews/Godeps/_workspace/src/github.com/boltdb/bolt"
 	"hnews/Godeps/_workspace/src/github.com/headzoo/surf"
 	"log"
@@ -10,12 +11,9 @@ import (
 	"time"
 )
 
-const (
-	Debug = true
-)
-
 var (
-	db, err = bolt.Open("a.db", 0644, nil)
+	newsdb, _ = bolt.Open("a.db", 0644, nil)
+	commdb, _ = bolt.Open("b.db", 0644, nil)
 )
 
 /** Login service **/
@@ -54,7 +52,7 @@ type News struct {
 
 func ReadNews(from int, to int) []News {
 	var news []News
-	db.View(func(tx *bolt.Tx) error {
+	newsdb.View(func(tx *bolt.Tx) error {
 		for i := from; i <= to; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
@@ -81,10 +79,6 @@ func ReadNews(from int, to int) []News {
 			var id int32
 			binary.Read(bytes.NewReader(b.Get([]byte("id"))), binary.LittleEndian, &id)
 
-			if err != nil {
-				log.Println("ReadNews:", err)
-				return err
-			}
 			news = append(news, News{id, rank, title, link, author, points, time.Unix(t, 0), comments})
 		}
 		return nil
@@ -93,7 +87,7 @@ func ReadNews(from int, to int) []News {
 }
 
 func SaveNews(news []News) {
-	db.Update(func(tx *bolt.Tx) error {
+	newsdb.Update(func(tx *bolt.Tx) error {
 		for _, aNews := range news {
 			b, err := tx.CreateBucketIfNotExists([]byte(strconv.Itoa(int(aNews.Rank))))
 			if err != nil {
@@ -134,13 +128,64 @@ func SaveNews(news []News) {
 	})
 }
 
+// Read all the keys from News db
+func ReadNewsIds() []int32 {
+	var ids []int32
+	newsdb.View(func(tx *bolt.Tx) error {
+		for i := 1; i < 480; i++ {
+			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
+			if b == nil {
+				log.Println("Bucket", i, "not found.")
+				continue
+			}
+			var id int32
+			binary.Read(bytes.NewReader(b.Get([]byte("id"))), binary.LittleEndian, &id)
+			ids = append(ids, id)
+		}
+		return nil
+
+	})
+	return ids
+}
+
 type Comment struct {
-	ParentID int32     `json:"id"` // ID of the News or parent Comment
+	ParentID int32     `json:"parentid"` // ID of the News
+	ID       int32     `json:"id"`       // The Comments unique ID
+	Offset   int32     `json:"offset"`   // Level of offset for the Comment
 	Time     time.Time `json:"time"`
 	Author   string    `json:"author"`
 	Text     string    `json:"text"`
 }
 
+// Dumps the Comments into the newsDB as JSON.
 func SaveComments(comments []Comment) {
+	if len(comments) == 0 {
+		return
+	}
+	newsid := comments[0].ParentID
+	json, err := json.Marshal(comments)
+	if err != nil {
+		log.Println("SaveComments:", err)
+	}
+	commdb.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("comments"))
+		if err != nil {
+			log.Println("SaveComments:", err)
+			return err
+		}
+		b.Put([]byte(strconv.Itoa(int(newsid))), []byte(json))
+		return nil
+	})
+}
 
+// Returns the comments on the News item specified by the id.
+func ReadComments(newsid int) string {
+	var json string
+	commdb.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("comments")) // Might not even need a bucket.
+		k := strconv.Itoa(newsid)
+		json = string(b.Get([]byte(k)))
+		return nil
+	})
+	return json
 }
