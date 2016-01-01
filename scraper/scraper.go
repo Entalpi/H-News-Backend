@@ -307,11 +307,6 @@ func parsePoints(root *html.Node) []int {
 /********************** News **********************/
 
 /******************** Comments ********************/
-type Pair struct {
-	author string
-	time   time.Time
-}
-
 // Scrapes the Comments for every News item currently in the database.
 func scrapeComments(commentsCh chan []services.Comment) {
 	for {
