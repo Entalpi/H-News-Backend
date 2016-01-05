@@ -36,13 +36,20 @@ func (*API) StartAPI() {
 	})
 
 	r.GET("/v1/comments", func(c *gin.Context) {
+		from, err0 := strconv.Atoi(c.Query("from"))
+		to, err1 := strconv.Atoi(c.Query("to"))
+		if err0 != nil || err1 != nil || from <= 0 {
+			c.String(http.StatusBadRequest, "Bad index")
+			return
+		}
+
 		id, err := strconv.Atoi(c.Query("newsid"))
 		if err != nil {
 			c.String(http.StatusBadRequest, "Not a valid item id")
 			return
 		}
 
-		comments := services.ReadComments(id)
+		comments := services.ReadComments(id, to, from)
 		c.JSON(http.StatusOK, gin.H{"values": comments})
 	})
 

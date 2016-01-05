@@ -149,6 +149,7 @@ func ReadNewsIds() []int32 {
 }
 
 type Comment struct {
+	Num      int32     `json:"num"`      // The ith comment on the post
 	ParentID int32     `json:"parentid"` // ID of the News
 	ID       int32     `json:"id"`       // The Comments unique ID
 	Offset   int32     `json:"offset"`   // Level of offset for the Comment
@@ -163,29 +164,41 @@ func SaveComments(comments []Comment) {
 		return
 	}
 	newsid := comments[0].ParentID
-	json, err := json.Marshal(comments)
-	if err != nil {
-		log.Println("SaveComments:", err)
-	}
 	commdb.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte("comments"))
+		k := strconv.Itoa(int(newsid))
+		b, err := tx.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			log.Println("SaveComments:", err)
 			return err
 		}
-		b.Put([]byte(strconv.Itoa(int(newsid))), []byte(json))
+		for _, comment := range comments {
+			v, err := json.Marshal(comment)
+			if err != nil {
+				log.Println("SaveComments:", err)
+				continue
+			}
+			b.Put([]byte(strconv.Itoa(int(comment.Num))), []byte(v))
+		}
 		return nil
 	})
 }
 
 // Returns the comments on the News item specified by the id.
-func ReadComments(newsid int) string {
-	var json string
+func ReadComments(newsid int, from int, to int) []Comment {
+	var comments []Comment
 	commdb.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("comments")) // Might not even need a bucket.
 		k := strconv.Itoa(newsid)
-		json = string(b.Get([]byte(k)))
+		b := tx.Bucket([]byte(k))
+		for i := to; i < from; i++ {
+			str := string(b.Get([]byte(strconv.Itoa(i))))
+			if len(str) == 0 {
+				continue
+			}
+			var comment Comment
+			json.Unmarshal([]byte(str), &comment)
+			comments = append(comments, comment)
+		}
 		return nil
 	})
-	return json
+	return comments
 }
