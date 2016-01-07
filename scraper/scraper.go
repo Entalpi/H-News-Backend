@@ -343,7 +343,7 @@ func parseComments(root *html.Node, newsid int32) []services.Comment {
 
 	var rootComments []services.Comment
 	for i, _ := range authors {
-		comment := services.Comment{int32(i), newsid, int32(ids[i]), int32(offsets[i]),
+		comment := services.Comment{int32(i + 1), newsid, int32(ids[i]), int32(offsets[i]),
 			times[i], authors[i], texts[i]}
 		rootComments = append(rootComments, comment)
 	}
