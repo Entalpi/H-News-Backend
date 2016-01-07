@@ -199,8 +199,10 @@ func ReadComments(newsid int, from int, to int) []Comment {
 	commdb.View(func(tx *bolt.Tx) error {
 		k := strconv.Itoa(newsid)
 		b := tx.Bucket([]byte(k))
-		for i := to; i < from; i++ {
-			str := string(b.Get([]byte(strconv.Itoa(i))))
+		for i := from; i < to; i++ {
+			k := []byte(strconv.Itoa(i))
+			v := b.Get(k)
+			str := string(v)
 			if len(str) == 0 {
 				continue
 			}

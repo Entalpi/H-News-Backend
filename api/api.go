@@ -1,12 +1,13 @@
 package api
 
 import (
-	"hnews/Godeps/_workspace/src/github.com/gin-gonic/gin"
 	"hnews/services"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"hnews/Godeps/_workspace/src/github.com/gin-gonic/gin"
 )
 
 type API struct {
@@ -49,7 +50,7 @@ func (*API) StartAPI() {
 			return
 		}
 
-		comments := services.ReadComments(id, to, from)
+		comments := services.ReadComments(id, from, to)
 		c.JSON(http.StatusOK, gin.H{"values": comments})
 	})
 
