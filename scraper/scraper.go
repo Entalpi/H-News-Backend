@@ -1,15 +1,16 @@
 package scraper
 
 import (
-	"hnews/Godeps/_workspace/src/github.com/yhat/scrape"
-	"hnews/Godeps/_workspace/src/golang.org/x/net/html"
-	"hnews/Godeps/_workspace/src/golang.org/x/net/html/atom"
 	"hnews/services"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"hnews/Godeps/_workspace/src/github.com/yhat/scrape"
+	"hnews/Godeps/_workspace/src/golang.org/x/net/html"
+	"hnews/Godeps/_workspace/src/golang.org/x/net/html/atom"
 )
 
 type Scraper struct {

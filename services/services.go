@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"hnews/Godeps/_workspace/src/github.com/boltdb/bolt"
-	"hnews/Godeps/_workspace/src/github.com/headzoo/surf"
 	"log"
 	"strconv"
 	"time"
+
+	"hnews/Godeps/_workspace/src/github.com/boltdb/bolt"
+	"hnews/Godeps/_workspace/src/github.com/headzoo/surf"
 )
 
 var (
@@ -17,6 +18,8 @@ var (
 )
 
 /** Login service **/
+
+// Login signs the user to Hacker News
 func Login(username string, password string) bool {
 	bow := surf.NewBrowser()
 	err := bow.Open("https://news.ycombinator.com/login?goto=news")
@@ -38,9 +41,10 @@ func Login(username string, password string) bool {
 }
 
 /** Database Service **/
-// Ints need to be a defined size since binary.Read does not support just 'int'
+
+// News represent one news story/item on Hacker News
 type News struct {
-	ID       int32     `json:"id"`
+	ID       int32     `json:"id"` // Ints need to be a defined size since binary.Read does not support just 'int'
 	Rank     int32     `json:"rank"`
 	Title    string    `json:"title"`
 	Link     string    `json:"link"`
@@ -50,6 +54,7 @@ type News struct {
 	Comments int32     `json:"comments"` // Number of comments on the News
 }
 
+// ReadNews ...
 func ReadNews(from int, to int) []News {
 	var news []News
 	newsdb.View(func(tx *bolt.Tx) error {
@@ -86,6 +91,7 @@ func ReadNews(from int, to int) []News {
 	return news
 }
 
+// SaveNews saves the News in the DB
 func SaveNews(news []News) {
 	newsdb.Update(func(tx *bolt.Tx) error {
 		for _, aNews := range news {
@@ -128,7 +134,7 @@ func SaveNews(news []News) {
 	})
 }
 
-// Read all the keys from News db
+// ReadNewsIds Read all the keys from News db
 func ReadNewsIds() []int32 {
 	var ids []int32
 	newsdb.View(func(tx *bolt.Tx) error {
@@ -148,6 +154,7 @@ func ReadNewsIds() []int32 {
 	return ids
 }
 
+// A Comment on a News
 type Comment struct {
 	Num      int32     `json:"num"`      // The ith comment on the post
 	ParentID int32     `json:"parentid"` // ID of the News
@@ -158,7 +165,7 @@ type Comment struct {
 	Text     string    `json:"text"`
 }
 
-// Dumps the Comments into the newsDB as JSON.
+// SaveComments Dumps the Comments into the newsDB as JSON.
 func SaveComments(comments []Comment) {
 	if len(comments) == 0 {
 		return
@@ -185,7 +192,8 @@ func SaveComments(comments []Comment) {
 
 // TODO: Rewrite the News saving and reading to use JSON marshalling
 // TODO: The date extracting does not quite work, off by a couple of hours
-// Returns the comments on the News item specified by the id.
+
+// ReadComments Returns the comments on the News item specified by the id.
 func ReadComments(newsid int, from int, to int) []Comment {
 	var comments []Comment
 	commdb.View(func(tx *bolt.Tx) error {
