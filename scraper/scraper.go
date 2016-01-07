@@ -15,9 +15,11 @@ import (
 	"hnews/Godeps/_workspace/src/golang.org/x/net/html/atom"
 )
 
+// Scraper ...
 type Scraper struct {
 }
 
+// NewScraper returns a new Scraper which collects all static information from HN
 func NewScraper() *Scraper {
 	scraper := new(Scraper)
 	go startScraping()
@@ -345,7 +347,7 @@ func parseComments(root *html.Node, newsid int32) []services.Comment {
 	texts := parseCommentText(root)
 
 	var rootComments []services.Comment
-	for i, _ := range authors {
+	for i := range authors {
 		comment := services.Comment{int32(i + 1), newsid, int32(ids[i]), int32(offsets[i]),
 			times[i], authors[i], texts[i]}
 		rootComments = append(rootComments, comment)
@@ -454,7 +456,7 @@ func parseCommentText(root *html.Node) []string {
 	var texts []string
 	for _, text := range textNodes {
 		content := scrape.Text(text)
-		// BUG: Remove trailing trash from the 'Reply' HTML node ...
+		// TODO: Remove trailing trash from the 'Reply' HTML node ...
 		texts = append(texts, content) //[0:len(content)-5])
 	}
 	return texts

@@ -10,15 +10,18 @@ import (
 	"hnews/Godeps/_workspace/src/github.com/gin-gonic/gin"
 )
 
+// API ...
 type API struct {
 }
 
+// NewAPI ...
 func NewAPI() *API {
 	api := new(API)
 	go api.StartAPI()
 	return api
 }
 
+// StartAPI sets up the API and starts it on Heroku port or :8080
 func (*API) StartAPI() {
 	r := gin.Default()
 	gin.SetMode(gin.DebugMode)
@@ -63,7 +66,6 @@ func getPort() string {
 	log.Println(port)
 	if port != "" {
 		return port
-	} else {
-		return "8080"
 	}
+	return "8080"
 }
