@@ -190,9 +190,6 @@ func SaveComments(comments []Comment) {
 	})
 }
 
-// TODO: Rewrite the News saving and reading to use JSON marshalling
-// TODO: The date extracting does not quite work, off by a couple of hours
-
 // ReadComments Returns the comments on the News item specified by the id.
 func ReadComments(newsid int, from int, to int) []Comment {
 	var comments []Comment

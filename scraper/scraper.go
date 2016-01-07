@@ -1,5 +1,7 @@
 package scraper
 
+// TODO: The date extracting does not quite work, off by a couple of hours
+
 import (
 	"hnews/services"
 	"log"
