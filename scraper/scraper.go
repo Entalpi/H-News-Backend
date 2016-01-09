@@ -252,11 +252,9 @@ func parseTimeString(text string) (time.Time, error) {
 	switch words[1] {
 	case "minutes":
 		result = now.Add(time.Duration(-timeAgo) * time.Minute)
-	case "hours":
+	case "hours", "hour":
 		result = now.Add(time.Duration(-timeAgo) * time.Hour)
-	case "days":
-		result = now.Add(time.Duration(-timeAgo*24) * time.Hour)
-	case "day":
+	case "days", "day":
 		result = now.Add(time.Duration(-timeAgo*24) * time.Hour)
 	}
 	return result, err

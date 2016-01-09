@@ -1,5 +1,7 @@
 package api
 
+// TODO: Start documenting the error codes to the frontend.
+
 import (
 	"hnews/services"
 	"log"
