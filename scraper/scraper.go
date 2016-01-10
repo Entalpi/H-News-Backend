@@ -37,6 +37,7 @@ func startScraping() {
 		case newNews := <-newsCh:
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
+			log.Println(len(newComments), "new comments.")
 			go services.SaveComments(newComments)
 		}
 	}
@@ -240,14 +241,14 @@ func parseIDs(root *html.Node) []int {
 // Quantity is of "hours"/"days"/"minutes"
 // Text is of "4 hours ago", "41 days ago", etc
 func parseTimeString(text string) (time.Time, error) {
-	now := time.Now()
 	words := strings.Fields(text)
 
 	timeAgo, err := strconv.Atoi(words[0])
 	if err != nil {
-		return now, err
+		return time.Time{}, err
 	}
 
+	now := time.Now()
 	var result time.Time
 	switch words[1] {
 	case "minutes":
@@ -328,29 +329,27 @@ func scrapeComments(commentsCh chan []services.Comment) {
 				log.Println(err)
 				continue
 			}
-
-			comments := parseComments(root, id)
-			commentsCh <- comments
+			go parseComments(root, id, commentsCh)
 		}
-		time.Sleep(1 * time.Second)
+		//time.Sleep(1 * time.Second)
 	}
 }
 
 // Parses all the Comments for a particular News item.
-func parseComments(root *html.Node, newsid int32) []services.Comment {
+func parseComments(root *html.Node, newsid int32, commentsCh chan []services.Comment) {
 	offsets := parseOffsets(root)
 	ids := parseCommentIDs(root)
 	authors := parseCommentAuthors(root)
 	times := parseCommentTimes(root)
 	texts := parseCommentText(root)
 
-	var rootComments []services.Comment
+	var comments []services.Comment
 	for i := range authors {
 		comment := services.Comment{int32(i + 1), newsid, int32(ids[i]), int32(offsets[i]),
 			times[i], authors[i], texts[i]}
-		rootComments = append(rootComments, comment)
+		comments = append(comments, comment)
 	}
-	return rootComments
+	commentsCh <- comments
 }
 
 // Parses the level for each Comment in the comment tree. Interval: 0-inf.
