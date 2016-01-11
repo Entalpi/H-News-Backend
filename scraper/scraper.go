@@ -35,6 +35,7 @@ func startScraping() {
 	for {
 		select {
 		case newNews := <-newsCh:
+			log.Println(len(newNews), "new news.")
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
 			log.Println(len(newComments), "new comments.")
@@ -285,7 +286,6 @@ func parseArticles(root *html.Node) ([]string, []string) {
 
 func parsePoints(root *html.Node) []int {
 	matcher := func(n *html.Node) bool {
-		// must check for nil values
 		if n.DataAtom == atom.Span && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "subtext"
 			self := scrape.Attr(n, "class") == "score"
@@ -331,17 +331,26 @@ func scrapeComments(commentsCh chan []services.Comment) {
 			}
 			go parseComments(root, id, commentsCh)
 		}
-		//time.Sleep(1 * time.Second)
 	}
 }
 
 // Parses all the Comments for a particular News item.
 func parseComments(root *html.Node, newsid int32, commentsCh chan []services.Comment) {
-	offsets := parseOffsets(root)
-	ids := parseCommentIDs(root)
-	authors := parseCommentAuthors(root)
-	times := parseCommentTimes(root)
-	texts := parseCommentText(root)
+	offsetsCh := make(chan []int)
+	idsCh := make(chan []int)
+	authorsCh := make(chan []string)
+	timesCh := make(chan []time.Time)
+	textsCh := make(chan []string)
+	go parseOffsets(root, offsetsCh)
+	go parseCommentIDs(root, idsCh)
+	go parseCommentAuthors(root, authorsCh)
+	go parseCommentTimes(root, timesCh)
+	go parseCommentText(root, textsCh)
+	offsets := <-offsetsCh
+	ids := <-idsCh
+	authors := <-authorsCh
+	times := <-timesCh
+	texts := <-textsCh
 
 	var comments []services.Comment
 	for i := range authors {
@@ -353,7 +362,7 @@ func parseComments(root *html.Node, newsid int32, commentsCh chan []services.Com
 }
 
 // Parses the level for each Comment in the comment tree. Interval: 0-inf.
-func parseOffsets(root *html.Node) []int {
+func parseOffsets(root *html.Node, ch chan []int) {
 	offsetMatcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.Img && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "ind"
@@ -369,11 +378,11 @@ func parseOffsets(root *html.Node) []int {
 		lvl, _ := strconv.Atoi(scrape.Attr(offset, "width"))
 		norm = append(norm, int(lvl/40))
 	}
-	return norm
+	ch <- norm
 }
 
 // Parses all the comments authors
-func parseCommentAuthors(root *html.Node) []string {
+func parseCommentAuthors(root *html.Node, ch chan []string) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			return scrape.Attr(n.Parent, "class") == "comhead"
@@ -386,11 +395,11 @@ func parseCommentAuthors(root *html.Node) []string {
 	for _, authorNode := range authorNodes {
 		authors = append(authors, scrape.Text(authorNode))
 	}
-	return authors
+	ch <- authors
 }
 
 // Parses all the comments itemids
-func parseCommentIDs(root *html.Node) []int {
+func parseCommentIDs(root *html.Node, ch chan []int) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			return scrape.Attr(n.Parent, "class") == "age"
@@ -414,11 +423,11 @@ func parseCommentIDs(root *html.Node) []int {
 		}
 		ids = append(ids, id)
 	}
-	return ids
+	ch <- ids
 }
 
 // Parses all the comments timestamps
-func parseCommentTimes(root *html.Node) []time.Time {
+func parseCommentTimes(root *html.Node, ch chan []time.Time) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			return scrape.Attr(n.Parent, "class") == "age"
@@ -435,11 +444,11 @@ func parseCommentTimes(root *html.Node) []time.Time {
 		}
 		dates = append(dates, date)
 	}
-	return dates
+	ch <- dates
 }
 
 // Parses the text of all Comments for a News
-func parseCommentText(root *html.Node) []string {
+func parseCommentText(root *html.Node, ch chan []string) {
 	textMatcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.Span && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "comment"
@@ -456,7 +465,7 @@ func parseCommentText(root *html.Node) []string {
 		// TODO: Remove trailing trash from the 'Reply' HTML node ...
 		texts = append(texts, content) //[0:len(content)-5])
 	}
-	return texts
+	ch <- texts
 }
 
 /******************** Comments ********************/
