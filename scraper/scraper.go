@@ -1,7 +1,5 @@
 package scraper
 
-// TODO: The date extracting does not quite work, off by a couple of hours
-
 import (
 	"hnews/services"
 	"log"
@@ -15,18 +13,8 @@ import (
 	"hnews/Godeps/_workspace/src/golang.org/x/net/html/atom"
 )
 
-// Scraper ...
-type Scraper struct {
-}
-
-// NewScraper returns a new Scraper which collects all static information from HN
-func NewScraper() *Scraper {
-	scraper := new(Scraper)
-	go startScraping()
-	return scraper
-}
-
-func startScraping() {
+// StartScraper starts the scraping and never returns, run as a goroutine.
+func StartScraper() {
 	newsCh := make(chan []services.News)
 	commentsCh := make(chan []services.Comment)
 	go scrapeFrontPage(newsCh)
