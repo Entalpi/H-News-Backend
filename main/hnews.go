@@ -11,8 +11,7 @@ import (
 
 func main() {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	signal.Notify(ch, syscall.SIGTERM)
+	signal.Notify(ch, syscall.SIGTERM, os.Interrupt)
 	go func() {
 		<-ch
 		services.Close()
