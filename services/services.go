@@ -54,6 +54,12 @@ type News struct {
 	Comments int32     `json:"comments"` // Number of comments on the News
 }
 
+// Close closes database connections
+func Close() {
+	newsdb.Close()
+	commdb.Close()
+}
+
 // ReadNews ...
 func ReadNews(from int, to int) []News {
 	var news []News
