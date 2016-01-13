@@ -23,10 +23,10 @@ func StartScraper() {
 	for {
 		select {
 		case newNews := <-newsCh:
-			log.Println(len(newNews), "new news.")
+			log.Println(len(newNews), "new news.") // DEBUG
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
-			log.Println(len(newComments), "new comments.")
+			log.Println(len(newComments), "new comments.") // DEBUG
 			go services.SaveComments(newComments)
 		}
 	}
@@ -52,13 +52,31 @@ func scrapeFrontPage(newsCh chan []services.News) {
 				continue
 			}
 
-			points := parsePoints(root)
-			ranks := parseRanks(root)
-			titles, links := parseArticles(root)
-			authors := parseAuthors(root)
-			times := parseTimes(root)
-			comments := parseNumComments(root)
-			ids := parseIDs(root)
+			pointsCh := make(chan []int)
+			ranksCh := make(chan []int)
+			titlesCh := make(chan []string)
+			linksCh := make(chan []string)
+			authorsCh := make(chan []string)
+			timesCh := make(chan []time.Time)
+			commentsCh := make(chan []int)
+			idsCh := make(chan []int)
+
+			go parsePoints(root, pointsCh)
+			go parseRanks(root, ranksCh)
+			go parseArticles(root, titlesCh, linksCh)
+			go parseAuthors(root, authorsCh)
+			go parseTimes(root, timesCh)
+			go parseNumComments(root, commentsCh)
+			go parseIDs(root, idsCh)
+
+			points := <-pointsCh
+			ranks := <-ranksCh
+			titles := <-titlesCh
+			links := <-linksCh
+			authors := <-authorsCh
+			times := <-timesCh
+			comments := <-commentsCh
+			ids := <-idsCh
 
 			for i := 0; i < len(ranks); i++ {
 				rank := int32(ranks[i])
@@ -103,7 +121,7 @@ func scrapeFrontPage(newsCh chan []services.News) {
 }
 
 // Parses out the rank of the articles.
-func parseRanks(root *html.Node) []int {
+func parseRanks(root *html.Node, ranksCh chan []int) {
 	var ranks []int
 
 	rankMatcher := func(n *html.Node) bool {
@@ -124,11 +142,11 @@ func parseRanks(root *html.Node) []int {
 		}
 		ranks = append(ranks, rank)
 	}
-	return ranks
+	ranksCh <- ranks
 }
 
 // Parses the authors of each Story on the frontpage
-func parseAuthors(root *html.Node) []string {
+func parseAuthors(root *html.Node, authorsCh chan []string) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "subtext"
@@ -145,11 +163,11 @@ func parseAuthors(root *html.Node) []string {
 	for _, authorNode := range authorNodes {
 		authors = append(authors, scrape.Text(authorNode))
 	}
-	return authors
+	authorsCh <- authors
 }
 
 // Parses the number of comments on each Story on the frontpage
-func parseNumComments(root *html.Node) []int {
+func parseNumComments(root *html.Node, commentsCh chan []int) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "subtext"
@@ -172,11 +190,11 @@ func parseNumComments(root *html.Node) []int {
 		}
 		numComms = append(numComms, numComm)
 	}
-	return numComms
+	commentsCh <- numComms
 }
 
 // Parses the timestamps from the HTML of the frontpage
-func parseTimes(root *html.Node) []time.Time {
+func parseTimes(root *html.Node, timesCh chan []time.Time) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil {
 			return scrape.Attr(n.Parent, "class") == "age"
@@ -194,11 +212,11 @@ func parseTimes(root *html.Node) []time.Time {
 		}
 		dates = append(dates, date)
 	}
-	return dates
+	timesCh <- dates
 }
 
 // Parses the id of each Story on the page
-func parseIDs(root *html.Node) []int {
+func parseIDs(root *html.Node, idsCh chan []int) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.Span && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "subtext"
@@ -224,7 +242,7 @@ func parseIDs(root *html.Node) []int {
 		}
 		ids = append(ids, id)
 	}
-	return ids
+	idsCh <- ids
 }
 
 // Quantity is of "hours"/"days"/"minutes"
@@ -251,7 +269,7 @@ func parseTimeString(text string) (time.Time, error) {
 }
 
 // Parses the title and the link of each Story on the page
-func parseArticles(root *html.Node) ([]string, []string) {
+func parseArticles(root *html.Node, titleCh chan []string, linksCh chan []string) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.A && n.Parent != nil && n.Parent.Parent != nil {
 			return scrape.Attr(n.Parent.Parent, "class") == "athing"
@@ -269,10 +287,11 @@ func parseArticles(root *html.Node) ([]string, []string) {
 		titles = append(titles, title)
 		links = append(links, link)
 	}
-	return titles, links
+	titleCh <- titles
+	linksCh <- links
 }
 
-func parsePoints(root *html.Node) []int {
+func parsePoints(root *html.Node, pointsCh chan []int) {
 	matcher := func(n *html.Node) bool {
 		if n.DataAtom == atom.Span && n.Parent != nil {
 			parent := scrape.Attr(n.Parent, "class") == "subtext"
@@ -293,7 +312,7 @@ func parsePoints(root *html.Node) []int {
 		}
 		points = append(points, point)
 	}
-	return points
+	pointsCh <- points
 }
 
 /********************** News **********************/

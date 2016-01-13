@@ -17,6 +17,17 @@ var (
 	commdb, _ = bolt.Open("b.db", 0644, nil)
 )
 
+// PrintDBStats prints our database statistics once per second.
+func PrintDBStats() {
+	go func() {
+		for {
+			log.Println(newsdb.Stats())
+			log.Println(commdb.Stats())
+			time.Sleep(4 * time.Second)
+		}
+	}()
+}
+
 /** Login service **/
 
 // Login signs the user to Hacker News
