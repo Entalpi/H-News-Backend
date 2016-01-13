@@ -23,10 +23,10 @@ func StartScraper() {
 	for {
 		select {
 		case newNews := <-newsCh:
-			log.Println(len(newNews), "new news.") // DEBUG
+			// log.Println(len(newNews), "new news.") // DEBUG
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
-			log.Println(len(newComments), "new comments.") // DEBUG
+			// log.Println(len(newComments), "new comments.") // DEBUG
 			go services.SaveComments(newComments)
 		}
 	}
@@ -469,8 +469,8 @@ func parseCommentText(root *html.Node, ch chan []string) {
 	var texts []string
 	for _, text := range textNodes {
 		content := scrape.Text(text)
-		// TODO: Remove trailing trash from the 'Reply' HTML node ...
-		texts = append(texts, content) //[0:len(content)-5])
+		// TODO: Removes trailing trash from the 'Reply' HTML node ...
+		texts = append(texts, content[0:len(content)-5])
 	}
 	ch <- texts
 }
