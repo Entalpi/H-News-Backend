@@ -116,7 +116,6 @@ func scrapeFrontPage(newsCh chan []services.News) {
 			}
 			newsCh <- news
 		}
-		time.Sleep(1 * time.Second)
 	}
 }
 

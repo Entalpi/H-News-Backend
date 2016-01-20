@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"hnews/Godeps/_workspace/src/github.com/boltdb/bolt"
-	"hnews/Godeps/_workspace/src/github.com/headzoo/surf"
 )
 
 var (
@@ -26,29 +25,6 @@ func PrintDBStats() {
 			time.Sleep(4 * time.Second)
 		}
 	}()
-}
-
-/** Login service **/
-
-// Login signs the user to Hacker News
-func Login(username string, password string) bool {
-	bow := surf.NewBrowser()
-	err := bow.Open("https://news.ycombinator.com/login?goto=news")
-	if err != nil {
-		return false
-	}
-
-	fm, _ := bow.Form("form")
-	fm.Input("acct", username)
-	fm.Input("pw", password)
-	erro := fm.Submit()
-	if erro != nil {
-		log.Println(erro)
-		return false
-	}
-	log.Println(fm)
-
-	return true
 }
 
 /** Database Service **/

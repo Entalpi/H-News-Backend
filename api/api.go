@@ -4,6 +4,7 @@ package api
 
 import (
 	"hnews/services"
+	"hnews/services/login"
 	"log"
 	"net/http"
 	"os"
@@ -30,6 +31,8 @@ func StartAPI() {
 		c.JSON(http.StatusOK, gin.H{"values": news})
 	})
 
+	/** Comment Endpoint **/
+	// Gives the comments from a i to j given the provided news id.
 	r.GET("/v1/comments", func(c *gin.Context) {
 		from, err0 := strconv.Atoi(c.Query("from"))
 		to, err1 := strconv.Atoi(c.Query("to"))
@@ -46,6 +49,56 @@ func StartAPI() {
 
 		comments := services.ReadComments(id, from, to)
 		c.JSON(http.StatusOK, gin.H{"values": comments})
+	})
+
+	// Given a username and password tries to login with the user and
+	// save the session
+	r.POST("/v1/login", func(c *gin.Context) {
+		username := c.Query("username")
+		password := c.Query("password")
+		success := login.Login(username, password)
+		if success {
+			c.JSON(http.StatusOK, gin.H{"success": success})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"success": success})
+		}
+	})
+
+	// Upvotes a specific item, comment, news, etc
+	r.POST("/v1/upvote", func(c *gin.Context) {
+		newsid := c.Query("id")
+		username := c.Query("username")
+		success := login.Upvote(newsid, username)
+		if success {
+			c.JSON(http.StatusOK, gin.H{"success": success})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"success": success})
+		}
+	})
+
+	// Comment on a news item
+	r.POST("/v1/news/comment", func(c *gin.Context) {
+		username := c.Query("username")
+		newsid := c.Query("id")
+		comment := c.Query("comment")
+		success := login.Comment(newsid, username, comment)
+		if success {
+			c.JSON(http.StatusOK, gin.H{"success": success})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"success": success})
+		}
+	})
+
+	// Post a reply on a comment to a story
+	r.POST("/v1/comments/reply", func(c *gin.Context) {
+		username := c.Query("username")
+		commentid := c.Query("id")
+		success := login.Reply(commentid, username)
+		if success {
+			c.JSON(http.StatusOK, gin.H{"success": success})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"success": success})
+		}
 	})
 
 	r.Run(":" + getPort()) // listen and serve on 0.0.0.0:8080
