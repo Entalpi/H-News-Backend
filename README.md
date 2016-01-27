@@ -1,5 +1,27 @@
 # H-News-Backend
 
+# Introduction
+The backend is up and running on a free dyno over at [Heroku](https://h-news.herokuapp.com).
+
+# API documentation
+
+## Endpoints
+All endpoints are prefixed with '/v1'
+### News
+'/news'
+URL params: from: Int, to: Int
+Returns the top stories from H.N front page from index 'from' to index 'to'.
+
+#### Example
+TDA
+
+### Comments
+TDA
+
+#### Example
+TDA
+
+# License
 The MIT License (MIT)
 Copyright (c) 2015 Alexander Lingtorp
 
