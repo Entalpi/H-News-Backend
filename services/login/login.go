@@ -15,20 +15,28 @@ var (
 func Login(username string, password string) bool {
 	bow := surf.NewBrowser()
 	err := bow.Open("https://news.ycombinator.com/login")
-	if err != nil {
-		return false
+
+	// For some reason bow.Form does not find 'form' because bow.Open has not loaded
+	// Keep retrying untill
+	for {
+		if err == nil {
+			err = bow.Open("https://news.ycombinator.com/login")
+			break
+		}
+		log.Println(err)
 	}
 
 	fm, err := bow.Form("form")
+
 	if err != nil {
-		log.Println(err)
+		log.Println("Form err:", err)
 		return false
 	}
 	fm.Input("acct", username)
 	fm.Input("pw", password)
 	err = fm.Submit()
 	if err != nil {
-		log.Println(err)
+		log.Println("Submit form: ", err)
 		return false
 	}
 	if loggedInUser == nil {
