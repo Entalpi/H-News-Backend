@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"hnews/Godeps/_workspace/src/github.com/yhat/scrape"
@@ -17,106 +18,122 @@ import (
 func StartScraper() {
 	newsCh := make(chan []services.News)
 	commentsCh := make(chan []services.Comment)
-	go scrapeFrontPage(newsCh)
+	go scrapePages(newsCh)
 	go scrapeComments(commentsCh)
 
 	for {
 		select {
 		case newNews := <-newsCh:
-			// log.Println(len(newNews), "new news.") // DEBUG
+			if len(newNews) == 0 {
+				continue
+			}
+			log.Println(len(newNews), "new news.") // DEBUG
 			services.SaveNews(newNews)
 		case newComments := <-commentsCh:
-			// log.Println(len(newComments), "new comments.") // DEBUG
+			if len(newComments) == 0 {
+				continue
+			}
+			log.Println(len(newComments), "new comments.") // DEBUG
 			services.SaveComments(newComments)
 		}
 	}
 }
 
 /********************** News **********************/
-// Parses the front page and sends a []News of the content
-func scrapeFrontPage(newsCh chan []services.News) {
+// Starts the download of all News pages. Sends []News on the channel
+func scrapePages(newsCh chan []services.News) {
+	var wg sync.WaitGroup
 	for {
-		for i := 1; i <= 16; i++ {
-			var news []services.News
-
-			url := "https://news.ycombinator.com/news?p=" + strconv.Itoa(i)
-			resp, err := http.Get(url)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			root, err := html.Parse(resp.Body)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			pointsCh := make(chan []int)
-			ranksCh := make(chan []int)
-			titlesCh := make(chan []string)
-			linksCh := make(chan []string)
-			authorsCh := make(chan []string)
-			timesCh := make(chan []time.Time)
-			commentsCh := make(chan []int)
-			idsCh := make(chan []int)
-
-			go parsePoints(root, pointsCh)
-			go parseRanks(root, ranksCh)
-			go parseArticles(root, titlesCh, linksCh)
-			go parseAuthors(root, authorsCh)
-			go parseTimes(root, timesCh)
-			go parseNumComments(root, commentsCh)
-			go parseIDs(root, idsCh)
-
-			points := <-pointsCh
-			ranks := <-ranksCh
-			titles := <-titlesCh
-			links := <-linksCh
-			authors := <-authorsCh
-			times := <-timesCh
-			comments := <-commentsCh
-			ids := <-idsCh
-
-			for i := 0; i < len(ranks); i++ {
-				rank := int32(ranks[i])
-				title := titles[i]
-
-				var time time.Time
-				if i < len(times) {
-					time = times[i]
-				}
-
-				var link string
-				if i < len(links) {
-					link = links[i]
-				}
-
-				var author string
-				if i < len(authors) {
-					author = authors[i]
-				}
-
-				var numPoints int32
-				if i < len(points) {
-					numPoints = int32(points[i])
-				}
-
-				var numComments int32
-				if i < len(comments) {
-					numComments = int32(comments[i])
-				}
-
-				var id int32
-				if i < len(ids) {
-					id = int32(ids[i])
-				}
-
-				news = append(news, services.News{id, rank, title, link, author, numPoints, time, numComments})
-			}
-			newsCh <- news
+		for id := 1; id <= 16; id++ {
+			wg.Add(1)
+			go scrapePage(id, newsCh, &wg)
 		}
+		wg.Wait()
 	}
+}
+
+// Scrapes one page of News
+func scrapePage(id int, newsCh chan []services.News, wg *sync.WaitGroup) {
+	var news []services.News
+	defer wg.Done()
+
+	url := "https://news.ycombinator.com/news?p=" + strconv.Itoa(id)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	root, err := html.Parse(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	pointsCh := make(chan []int)
+	ranksCh := make(chan []int)
+	titlesCh := make(chan []string)
+	linksCh := make(chan []string)
+	authorsCh := make(chan []string)
+	timesCh := make(chan []time.Time)
+	commentsCh := make(chan []int)
+	idsCh := make(chan []int)
+
+	go parsePoints(root, pointsCh)
+	go parseRanks(root, ranksCh)
+	go parseArticles(root, titlesCh, linksCh)
+	go parseAuthors(root, authorsCh)
+	go parseTimes(root, timesCh)
+	go parseNumComments(root, commentsCh)
+	go parseIDs(root, idsCh)
+
+	points := <-pointsCh
+	ranks := <-ranksCh
+	titles := <-titlesCh
+	links := <-linksCh
+	authors := <-authorsCh
+	times := <-timesCh
+	comments := <-commentsCh
+	ids := <-idsCh
+
+	for i := 0; i < len(ranks); i++ {
+		rank := int32(ranks[i])
+		title := titles[i]
+
+		var time time.Time
+		if i < len(times) {
+			time = times[i]
+		}
+
+		var link string
+		if i < len(links) {
+			link = links[i]
+		}
+
+		var author string
+		if i < len(authors) {
+			author = authors[i]
+		}
+
+		var numPoints int32
+		if i < len(points) {
+			numPoints = int32(points[i])
+		}
+
+		var numComments int32
+		if i < len(comments) {
+			numComments = int32(comments[i])
+		}
+
+		var id int32
+		if i < len(ids) {
+			id = int32(ids[i])
+		}
+
+		news = append(news, services.News{id, rank, title, link, author, numPoints, time, numComments})
+	}
+	newsCh <- news
 }
 
 // Parses out the rank of the articles.
@@ -319,29 +336,36 @@ func parsePoints(root *html.Node, pointsCh chan []int) {
 /******************** Comments ********************/
 // Scrapes the Comments for every News item currently in the database.
 func scrapeComments(commentsCh chan []services.Comment) {
+	var wg sync.WaitGroup
 	for {
 		ids := services.ReadNewsIds()
 		for _, id := range ids {
-			url := "https://news.ycombinator.com/item?id=" + strconv.Itoa(int(id))
-
-			resp, err := http.Get(url)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			root, err := html.Parse(resp.Body)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			go parseComments(root, id, commentsCh)
+			wg.Add(1)
+			go parseComments(id, commentsCh, &wg)
 		}
+		wg.Wait()
 	}
 }
 
 // Parses all the Comments for a particular News item.
-func parseComments(root *html.Node, newsid int32, commentsCh chan []services.Comment) {
+func parseComments(newsid int32, commentsCh chan []services.Comment,
+	wg *sync.WaitGroup) {
+	defer wg.Done()
+	url := "https://news.ycombinator.com/item?id=" + strconv.Itoa(int(newsid))
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	root, err := html.Parse(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	offsetsCh := make(chan []int)
 	idsCh := make(chan []int)
 	authorsCh := make(chan []string)
