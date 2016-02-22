@@ -1,6 +1,5 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-require 'sinatra'
-require 'json'
-require 'securerandom'
-require 'ruby-hackernews'
+gem 'sinatra'
+gem 'json'
+gem 'ruby-hackernews'
