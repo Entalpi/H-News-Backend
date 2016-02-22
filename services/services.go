@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	newsdb, _ = bolt.Open("a.db", 0644, nil)
-	commdb, _ = bolt.Open("b.db", 0644, nil)
+	newsdb, _ = bolt.Open("news.db", 0644, nil)
+	commdb, _ = bolt.Open("comments.db", 0644, nil)
 )
 
 // PrintDBStats prints our database statistics once per second.

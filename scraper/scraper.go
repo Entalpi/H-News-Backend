@@ -27,13 +27,13 @@ func StartScraper() {
 			if len(newNews) == 0 {
 				continue
 			}
-			log.Println(len(newNews), "new news.") // DEBUG
+			// log.Println(len(newNews), "new news.") // DEBUG
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
 			if len(newComments) == 0 {
 				continue
 			}
-			log.Println(len(newComments), "new comments.") // DEBUG
+			// log.Println(len(newComments), "new comments.") // DEBUG
 			go services.SaveComments(newComments)
 		}
 	}
