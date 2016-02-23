@@ -1,11 +1,11 @@
-require 'rubygems'
-require 'bundler/setup'
+require 'sinatra'
 require 'securerandom'
 
 Bundler.require(:default)
 
 include RubyHackernews
 
+class Pumatra < Sinatra::Base
 @@users = Hash.new
 
 helpers do
@@ -117,4 +117,5 @@ post '/v1/login/comment/reply' do
       end
     end
   end
+end
 end

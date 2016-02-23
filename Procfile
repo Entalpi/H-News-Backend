@@ -1,2 +1,2 @@
 web: main
-web: ruby main.rb
+login-microservice: bundle exec puma -C puma.rb
