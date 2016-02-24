@@ -1,2 +1,2 @@
-web: main
 login-service: puma
+web: main
