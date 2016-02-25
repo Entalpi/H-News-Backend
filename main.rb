@@ -11,7 +11,7 @@ class Pumatra < Sinatra::Base
   helpers do
 
     def user
-      @user ||= @@users[params[:apikey]] || halt(401)
+      user ||= @@users[params[:apikey]] || halt(401)
     end
 
   end

@@ -4,6 +4,7 @@ package api
 
 import (
 	"hnews/services"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -62,7 +63,107 @@ func StartAPI() {
 	r.POST("/v1/login", func(c *gin.Context) {
 		username := c.Query("username")
 		password := c.Query("password")
-		log.Println(username, password)
+
+		url := "http://localhost:3000/v1/login"
+		req, _ := http.NewRequest("POST", url, nil)
+
+		values := req.URL.Query()
+		values.Add("username", username)
+		values.Add("password", password)
+		req.URL.RawQuery = values.Encode()
+
+		resp, err := http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			content, _ := ioutil.ReadAll(resp.Body)
+			c.String(resp.StatusCode, string(content))
+		}
+	})
+
+	/** Entry wrapper for login-service **/
+	r.POST("/v1/login/entry/upvote", func(c *gin.Context) {
+		id := c.Query("id")
+		apikey := c.Query("apikey")
+
+		url := "http://localhost:3000/v1/login/entry/upvote"
+		req, _ := http.NewRequest("POST", url, nil)
+
+		values := req.URL.Query()
+		values.Add("id", id)
+		values.Add("apikey", apikey)
+		req.URL.RawQuery = values.Encode()
+
+		resp, err := http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			content, _ := ioutil.ReadAll(resp.Body)
+			c.String(resp.StatusCode, string(content))
+		}
+	})
+
+	r.POST("/v1/login/entry/comment", func(c *gin.Context) {
+		id := c.Query("id")
+		comment := c.Query("comment")
+		apikey := c.Query("apikey")
+
+		url := "http://localhost:3000/v1/login/entry/comment"
+		req, _ := http.NewRequest("POST", url, nil)
+
+		values := req.URL.Query()
+		values.Add("id", id)
+		values.Add("comment", comment)
+		values.Add("apikey", apikey)
+		req.URL.RawQuery = values.Encode()
+
+		resp, err := http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			content, _ := ioutil.ReadAll(resp.Body)
+			c.String(resp.StatusCode, string(content))
+		}
+	})
+
+	/** Comment wrapper for login-service **/
+	r.POST("/v1/login/comment/upvote", func(c *gin.Context) {
+		id := c.Query("id")
+		apikey := c.Query("apikey")
+
+		url := "http://localhost:3000/v1/login/comment/upvote"
+		req, _ := http.NewRequest("POST", url, nil)
+
+		values := req.URL.Query()
+		values.Add("id", id)
+		values.Add("apikey", apikey)
+		req.URL.RawQuery = values.Encode()
+
+		resp, err := http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			content, _ := ioutil.ReadAll(resp.Body)
+			c.String(resp.StatusCode, string(content))
+		}
+	})
+
+	r.POST("/v1/login/commment/reply", func(c *gin.Context) {
+		id := c.Query("id")
+		reply := c.Query("reply")
+		apikey := c.Query("apikey")
+
+		url := "http://localhost:3000/v1/login/comment/reply"
+		req, _ := http.NewRequest("POST", url, nil)
+
+		values := req.URL.Query()
+		values.Add("id", id)
+		values.Add("reply", reply)
+		values.Add("apikey", apikey)
+		req.URL.RawQuery = values.Encode()
+
+		resp, err := http.DefaultClient.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			content, _ := ioutil.ReadAll(resp.Body)
+			c.String(resp.StatusCode, string(content))
+		}
 	})
 
 	r.Run(":" + getPort()) // listen and serve on 0.0.0.0:8080

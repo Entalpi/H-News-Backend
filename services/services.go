@@ -134,7 +134,7 @@ func ReadNewsIds() []int32 {
 		for i := 1; i < 480; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
-				log.Println("Bucket", i, "not found.")
+				// log.Println("Bucket", i, "not found.")
 				continue
 			}
 			var id int32
