@@ -58,6 +58,13 @@ func StartAPI() {
 		c.JSON(http.StatusOK, gin.H{"values": comments})
 	})
 
+	/** Login wrapper for login-service **/
+	r.POST("/v1/login", func(c *gin.Context) {
+		username := c.Query("username")
+		password := c.Query("password")
+		log.Println(username, password)
+	})
+
 	r.Run(":" + getPort()) // listen and serve on 0.0.0.0:8080
 }
 
