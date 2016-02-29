@@ -2,9 +2,23 @@
 	"ImportPath": "hnews",
 	"GoVersion": "go1.6",
 	"Packages": [
-		"github.com/gin-gonic/gin"
+		"github.com/cenkalti/backoff",
+		"github.com/yhat/scrape",
+		"golang.org/x/net/html",
+		"golang.org/x/net/html/atom",
+		"github.com/gin-gonic/gin",
+		"github.com/boltdb/bolt"
 	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.1.0-30-g6d4e6a3",
+			"Rev": "6d4e6a3ead833ba64932c56549bb8623afea0335"
+		},
+		{
+			"ImportPath": "github.com/cenkalti/backoff",
+			"Rev": "4dc77674aceaabba2c7e3da25d4c823edfb73f99"
+		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
@@ -42,8 +56,24 @@
 			"Rev": "1f4a1643a57e798696635ea4c126e9127adb7d3c"
 		},
 		{
+			"ImportPath": "github.com/yhat/scrape",
+			"Rev": "47d070048ae58bf228dfdfcfaf1d1c6abc00620e"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
+			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
 		},
 		{
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
