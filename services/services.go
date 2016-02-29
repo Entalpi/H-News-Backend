@@ -4,30 +4,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"github.com/boltdb/bolt"
 	"log"
 	"strconv"
 	"time"
-
-	"hnews/Godeps/_workspace/src/github.com/boltdb/bolt"
 )
 
 var (
 	newsdb, _ = bolt.Open("news.db", 0644, nil)
 	commdb, _ = bolt.Open("comments.db", 0644, nil)
 )
-
-// PrintDBStats prints our database statistics once per second.
-func PrintDBStats() {
-	go func() {
-		for {
-			log.Println(newsdb.Stats())
-			log.Println(commdb.Stats())
-			time.Sleep(4 * time.Second)
-		}
-	}()
-}
-
-/** Database Service **/
 
 // News represent one news story/item on Hacker News
 type News struct {
@@ -54,7 +40,7 @@ func ReadNews(from int, to int) []News {
 		for i := from; i <= to; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
-				log.Println("Bucket", i, "not found.")
+				log.Println("Bucket", i, "not found when reading news.")
 				continue
 			}
 
@@ -117,11 +103,6 @@ func SaveNews(news []News) {
 			var id bytes.Buffer
 			binary.Write(&id, binary.LittleEndian, aNews.ID)
 			b.Put([]byte("id"), []byte(id.Bytes()))
-
-			if err != nil {
-				log.Println("Err SaveNews:", err)
-				return err
-			}
 		}
 		return nil
 	})
@@ -134,7 +115,7 @@ func ReadNewsIds() []int32 {
 		for i := 1; i < 480; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
-				// log.Println("Bucket", i, "not found.")
+				log.Println("Bucket", i, "not found for newsid.")
 				continue
 			}
 			var id int32
@@ -158,7 +139,7 @@ type Comment struct {
 	Text     string    `json:"text"`
 }
 
-// SaveComments Dumps the Comments into the newsDB as JSON.
+// SaveComments Dumps the Comments into the commDB as JSON.
 func SaveComments(comments []Comment) {
 	if len(comments) == 0 {
 		return

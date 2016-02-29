@@ -1,6 +1,11 @@
 package scraper
 
 import (
+	"errors"
+	"github.com/cenkalti/backoff"
+	"github.com/yhat/scrape"
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"hnews/services"
 	"log"
 	"net/http"
@@ -8,10 +13,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"hnews/Godeps/_workspace/src/github.com/yhat/scrape"
-	"hnews/Godeps/_workspace/src/golang.org/x/net/html"
-	"hnews/Godeps/_workspace/src/golang.org/x/net/html/atom"
 )
 
 // StartScraper starts the scraping and never returns, run as a goroutine.
@@ -24,15 +25,9 @@ func StartScraper() {
 	for {
 		select {
 		case newNews := <-newsCh:
-			if len(newNews) == 0 {
-				continue
-			}
 			// log.Println(len(newNews), "new news.") // DEBUG
 			go services.SaveNews(newNews)
 		case newComments := <-commentsCh:
-			if len(newComments) == 0 {
-				continue
-			}
 			// log.Println(len(newComments), "new comments.") // DEBUG
 			go services.SaveComments(newComments)
 		}
@@ -58,11 +53,19 @@ func scrapePage(id int, newsCh chan []services.News, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	url := "https://news.ycombinator.com/news?p=" + strconv.Itoa(id)
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println(err)
-		return
+
+	var resp *http.Response
+	operation := func() error {
+		var err error
+		resp, err = http.Get(url)
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return errors.New("Server busy.")
+		}
+		return nil
 	}
+
+	backoff.Retry(operation, backoff.NewExponentialBackOff())
+
 	defer resp.Body.Close()
 
 	root, err := html.Parse(resp.Body)
@@ -132,6 +135,9 @@ func scrapePage(id int, newsCh chan []services.News, wg *sync.WaitGroup) {
 		}
 
 		news = append(news, services.News{id, rank, title, link, author, numPoints, time, numComments})
+	}
+	if len(news) == 0 {
+		return
 	}
 	newsCh <- news
 }
@@ -344,6 +350,7 @@ func scrapeComments(commentsCh chan []services.Comment) {
 			go parseComments(id, commentsCh, &wg)
 		}
 		wg.Wait()
+		log.Println("Potato")
 	}
 }
 
@@ -353,11 +360,17 @@ func parseComments(newsid int32, commentsCh chan []services.Comment,
 	defer wg.Done()
 	url := "https://news.ycombinator.com/item?id=" + strconv.Itoa(int(newsid))
 
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println(err)
-		return
+	var resp *http.Response
+	operation := func() error {
+		var err error
+		resp, err = http.Get(url)
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return errors.New("Server busy.")
+		}
+		return nil
 	}
+
+	backoff.Retry(operation, backoff.NewExponentialBackOff())
 	defer resp.Body.Close()
 
 	root, err := html.Parse(resp.Body)
@@ -387,6 +400,9 @@ func parseComments(newsid int32, commentsCh chan []services.Comment,
 		comment := services.Comment{int32(i + 1), newsid, int32(ids[i]), int32(offsets[i]),
 			times[i], authors[i], texts[i]}
 		comments = append(comments, comment)
+	}
+	if len(comments) == 0 {
+		return
 	}
 	commentsCh <- comments
 }
