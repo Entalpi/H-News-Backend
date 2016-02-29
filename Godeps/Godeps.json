@@ -2,65 +2,53 @@
 	"ImportPath": "hnews",
 	"GoVersion": "go1.6",
 	"Packages": [
-		"./..."
+		"github.com/gin-gonic/gin"
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/PuerkitoBio/goquery",
-			"Comment": "v0.3.2-80-g417cce8",
-			"Rev": "417cce822c7b9a379df5824be95228d177c5698b"
-		},
-		{
-			"ImportPath": "github.com/andybalholm/cascadia",
-			"Rev": "3ad29d1ad1c4f2023e355603324348cf1f4b2d48"
-		},
-		{
-			"ImportPath": "github.com/boltdb/bolt",
-			"Comment": "v1.1.0-30-g6d4e6a3",
-			"Rev": "6d4e6a3ead833ba64932c56549bb8623afea0335"
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/gin",
-			"Comment": "v1.0rc1-148-g52fcc5d",
-			"Rev": "52fcc5dbf6e94df33ad313858fb94b713e9d1b4a"
+			"Comment": "v1.0rc1-233-g00b10c3",
+			"Rev": "00b10c30a00cdba00ba288154052b9e29ec4d0bf"
 		},
 		{
-			"ImportPath": "github.com/headzoo/surf",
-			"Comment": "0.5.5",
-			"Rev": "d8c2ee11cb0d0f16eb1e58b68497058b580eada6"
+			"ImportPath": "github.com/gin-gonic/gin/binding",
+			"Comment": "v1.0rc1-233-g00b10c3",
+			"Rev": "00b10c30a00cdba00ba288154052b9e29ec4d0bf"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/gin/render",
+			"Comment": "v1.0rc1-233-g00b10c3",
+			"Rev": "00b10c30a00cdba00ba288154052b9e29ec4d0bf"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "552c7b9542c194800fd493123b3798ef0a832032"
 		},
 		{
 			"ImportPath": "github.com/manucorporat/sse",
 			"Rev": "fe6ea2c8e398672518ef204bf0fbd9af858d0e15"
 		},
 		{
-			"ImportPath": "github.com/mattn/go-colorable",
-			"Rev": "3dac7b4f76f6e17fb39b768b89e3783d16e237fe"
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
-			"ImportPath": "github.com/mattn/go-isatty",
-			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
-		},
-		{
-			"ImportPath": "github.com/yhat/scrape",
-			"Rev": "47d070048ae58bf228dfdfcfaf1d1c6abc00620e"
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.3-4-g1f4a164",
+			"Rev": "1f4a1643a57e798696635ea4c126e9127adb7d3c"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
 		},
 		{
-			"ImportPath": "golang.org/x/net/html",
-			"Rev": "d75b1902409c457a51e4bd1895031872c370983a"
-		},
-		{
-			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
-		},
-		{
-			"ImportPath": "gopkg.in/bluesuncorp/validator.v5",
-			"Comment": "v5.12",
-			"Rev": "d5acf1dac43705f8bfbb71d878e290e2bed3950b"
+			"ImportPath": "gopkg.in/go-playground/validator.v8",
+			"Comment": "v8.17.1",
+			"Rev": "014792cf3e266caff1e916876be12282b33059e0"
 		}
 	]
 }
