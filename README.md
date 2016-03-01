@@ -1,7 +1,7 @@
 # H-News-Backend
 
 # Introduction
-The backend is up and running on a free dyno over at [Heroku](https://h-news.herokuapp.com).
+The backend is up and running on a hobby dyno over at [Heroku](https://h-news.herokuapp.com).
 
 # API documentation
 
