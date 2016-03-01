@@ -1,5 +1,5 @@
 {
-	"ImportPath": "hnews",
+	"ImportPath": "vendor",
 	"GoVersion": "go1.6",
 	"Packages": [
 		"github.com/cenkalti/backoff",
