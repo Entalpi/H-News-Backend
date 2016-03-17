@@ -1,13 +1,8 @@
 {
-	"ImportPath": "vendor",
+	"ImportPath": "hnews",
 	"GoVersion": "go1.6",
 	"Packages": [
-		"github.com/cenkalti/backoff",
-		"github.com/yhat/scrape",
-		"golang.org/x/net/html",
-		"golang.org/x/net/html/atom",
-		"github.com/gin-gonic/gin",
-		"github.com/boltdb/bolt"
+		"./..."
 	],
 	"Deps": [
 		{
