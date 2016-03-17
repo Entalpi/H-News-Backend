@@ -1,6 +1,8 @@
 package api
 
 // TODO: Start documenting the error codes to the frontend.
+// TODO: Disable debug mode in Gin
+// TODO: Disable debug mode in Sinatra
 
 import (
 	"hnews/services"
@@ -76,7 +78,7 @@ func StartAPI() {
 		if err == nil {
 			defer resp.Body.Close()
 			content, _ := ioutil.ReadAll(resp.Body)
-			c.String(resp.StatusCode, string(content))
+			c.JSON(resp.StatusCode, string(content))
 		}
 	})
 
@@ -97,7 +99,7 @@ func StartAPI() {
 		if err == nil {
 			defer resp.Body.Close()
 			content, _ := ioutil.ReadAll(resp.Body)
-			c.String(resp.StatusCode, string(content))
+			c.JSON(resp.StatusCode, string(content))
 		}
 	})
 
@@ -119,7 +121,7 @@ func StartAPI() {
 		if err == nil {
 			defer resp.Body.Close()
 			content, _ := ioutil.ReadAll(resp.Body)
-			c.String(resp.StatusCode, string(content))
+			c.JSON(resp.StatusCode, string(content))
 		}
 	})
 
@@ -140,7 +142,7 @@ func StartAPI() {
 		if err == nil {
 			defer resp.Body.Close()
 			content, _ := ioutil.ReadAll(resp.Body)
-			c.String(resp.StatusCode, string(content))
+			c.JSON(resp.StatusCode, string(content))
 		}
 	})
 
@@ -162,7 +164,7 @@ func StartAPI() {
 		if err == nil {
 			defer resp.Body.Close()
 			content, _ := ioutil.ReadAll(resp.Body)
-			c.String(resp.StatusCode, string(content))
+			c.JSON(resp.StatusCode, string(content))
 		}
 	})
 
