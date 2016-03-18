@@ -20,5 +20,5 @@ func main() {
 
 	go scraper.StartScraper()
 	go api.StartAPI()
-	select {} // Block forever
+	select {} // Block forever and ever
 }
