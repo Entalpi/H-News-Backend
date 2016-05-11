@@ -3,6 +3,8 @@
 # Introduction
 The backend is up and running on a hobby dyno over at [Heroku](https://h-news.herokuapp.com).
 
+It consists of one public API written in Go with Gin. 
+
 # API documentation
 
 ## Endpoints
