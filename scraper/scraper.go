@@ -2,17 +2,20 @@ package scraper
 
 import (
 	"errors"
-	"github.com/cenkalti/backoff"
-	"github.com/yhat/scrape"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
+	"fmt"
 	"hnews/services"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cenkalti/backoff"
+	"github.com/yhat/scrape"
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 // StartScraper starts the scraping and never returns, run as a goroutine.
@@ -394,15 +397,41 @@ func parseComments(newsid int32, commentsCh chan []services.Comment,
 	authors := <-authorsCh
 	times := <-timesCh
 	texts := <-textsCh
+	lengths := []int{len(offsets), len(ids), len(authors), len(times), len(texts)}
+	sort.Ints(lengths)
+	index := lengths[0]
 
 	var comments []services.Comment
-	for i := range authors {
-		comment := services.Comment{int32(i + 1), newsid, int32(ids[i]), int32(offsets[i]),
-			times[i], authors[i], texts[i]}
+	for i := 0; i < index; i++ {
+		var id int32
+		if i < len(ids) {
+			id = int32(ids[i])
+		}
+
+		var offset int32
+		if i < len(offsets) {
+			offset = int32(offsets[i])
+		}
+
+		var timestamp time.Time
+		if i < len(times) {
+			timestamp = times[i]
+		}
+
+		var author string
+		if i < len(authors) {
+			author = authors[i]
+		}
+
+		var text string
+		if i < len(texts) {
+			text = texts[i]
+		}
+
+		comment := services.Comment{int32(i + 1), newsid, id, offset,
+			timestamp, author, text}
 		comments = append(comments, comment)
-	}
-	if len(comments) == 0 {
-		return
+		fmt.Println(comment)
 	}
 	commentsCh <- comments
 }
