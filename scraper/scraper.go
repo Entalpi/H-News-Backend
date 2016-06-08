@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"errors"
-	"fmt"
 	"hnews/services"
 	"log"
 	"net/http"
@@ -431,7 +430,6 @@ func parseComments(newsid int32, commentsCh chan []services.Comment,
 		comment := services.Comment{int32(i + 1), newsid, id, offset,
 			timestamp, author, text}
 		comments = append(comments, comment)
-		fmt.Println(comment)
 	}
 	commentsCh <- comments
 }
