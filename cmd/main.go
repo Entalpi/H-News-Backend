@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"hnews/api"
 	"hnews/scraper"
 	"hnews/services"
@@ -14,6 +15,13 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+
+	debug := flag.Bool("debug", true, "Debug mode, defaults to true.")
+	flag.Parse()
+	if *debug {
+		fmt.Println("Running in DEBUG MODE ... Pass flag -debug=false to disable.")
+	}
+
 	topResource := scraper.Resource{scraper.TopNewsType,
 		scraper.TopBaseURL,
 		"/top",
