@@ -72,7 +72,7 @@ func (api *API) StartAPI(debug bool) {
 	})
 
 	// GET NEWEST posts from index :from: to index :to:
-	r.GET("/v1/", func(c *gin.Context) {
+	r.GET("/v1/newest", func(c *gin.Context) {
 		from, err0 := strconv.Atoi(c.Query("from"))
 		to, err1 := strconv.Atoi(c.Query("to"))
 		if err0 != nil || err1 != nil || from <= 0 {
