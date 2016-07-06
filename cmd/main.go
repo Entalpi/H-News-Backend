@@ -5,12 +5,15 @@ import (
 	"hnews/api"
 	"hnews/scraper"
 	"hnews/services"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	topResource := scraper.Resource{scraper.TopNewsType,
 		scraper.TopBaseURL,
 		"/top",
