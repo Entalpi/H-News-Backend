@@ -1,7 +1,6 @@
 package api
 
 // TODO: Start documenting the error codes to the frontend.
-// TODO: Disable debug mode in Gin
 // TODO: Disable debug mode in Sinatra
 
 import (
@@ -15,18 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	debug = true
-)
-
 // StartAPI sets up the API and starts it on Heroku port or :8080
-func StartAPI() {
-	r := gin.Default()
+func StartAPI(debug bool) {
 	if debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	r := gin.Default()
 
 	// GET News from index :from: to index :to:
 	r.GET("/v1/news", func(c *gin.Context) {

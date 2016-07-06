@@ -18,7 +18,7 @@ import (
 )
 
 // StartScraper starts the scraping and never returns, run as a goroutine.
-func StartScraper() {
+func StartScraper(debug bool) {
 	newsCh := make(chan []services.News)
 	commentsCh := make(chan []services.Comment)
 	go scrapePages(newsCh)

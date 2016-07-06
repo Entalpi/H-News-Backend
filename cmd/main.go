@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"hnews/api"
 	"hnews/scraper"
 	"hnews/services"
@@ -18,7 +19,10 @@ func main() {
 		os.Exit(1)
 	}()
 
-	go scraper.StartScraper()
-	go api.StartAPI()
+	debug := flag.Bool("debug", false, "Debug mode, defaults to false.")
+	flag.Parse()
+
+	go scraper.StartScraper(*debug)
+	go api.StartAPI(*debug)
 	select {} // Block forever and ever
 }
