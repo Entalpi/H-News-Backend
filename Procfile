@@ -1,2 +1,2 @@
 loginservice: puma -C puma.rb
-web: cmd
+web: cmd -debug=false
