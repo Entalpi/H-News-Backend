@@ -23,8 +23,8 @@ func StartAPI(debug bool) {
 	}
 	r := gin.Default()
 
-	// GET News from index :from: to index :to:
-	r.GET("/v1/news", func(c *gin.Context) {
+	// GET TOP posts from index :from: to index :to:
+	r.GET("/v1/top", func(c *gin.Context) {
 		from, err0 := strconv.Atoi(c.Query("from"))
 		to, err1 := strconv.Atoi(c.Query("to"))
 		if err0 != nil || err1 != nil || from <= 0 {
