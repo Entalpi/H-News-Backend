@@ -17,44 +17,95 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// Resource is a item that the API provides backed by a Scraper and DatabaseService
+type Resource struct {
+	Type         ResourceType              // Type of Resource
+	SourceURL    ResourceURL               // URL from which this resource is fetched from
+	URL          string                    // API URL for this resource
+	Name         string                    // Human readable name of the resource
+	BackingStore *services.DatabaseService // DatabaseService backing this resource
+}
+
+// ResourceType is a type of content the Scraper is able to scrape and process.
+type ResourceType int
+
+// These are the ResourceTypes that the Scraper can process
+const (
+	TopNewsType ResourceType = iota
+	ShowNewsType
+	NewestNewsType
+	AskNewsType
+)
+
+// ResourceURL is a URL that is associated with a ResourceType, 1-to-1.
+type ResourceURL string
+
+// ResourceURLs that map each ResourceType to a specific URL
+const (
+	TopBaseURL    ResourceURL = "https://news.ycombinator.com/news?p="
+	ShowBaseURL               = "https://news.ycombinator.com/show?p="
+	AskBaseURL                = "https://news.ycombinator.com/ask?p="
+	NewestBaseURL             = "https://news.ycombinator.com/newest?p="
+)
+
+// Scraper scrapes a specific resource of News from Hacker News.
+type Scraper struct {
+	ResourceType    ResourceType
+	ResourceURL     ResourceURL
+	DatabaseService *services.DatabaseService
+}
+
+// NewScraper allocated and inits a Scraper with it's database in the background
+func NewScraper(resource Resource) *Scraper {
+	scraper := new(Scraper)
+	scraper.ResourceType = resource.Type
+	scraper.ResourceURL = resource.SourceURL
+	scraper.DatabaseService = services.NewService(resource.Name)
+	return scraper
+}
+
 // StartScraper starts the scraping and never returns, run as a goroutine.
-func StartScraper(debug bool) {
+func (scraper *Scraper) StartScraper(debug bool) {
 	newsCh := make(chan []services.News)
 	commentsCh := make(chan []services.Comment)
-	go scrapePages(newsCh)
-	go scrapeComments(commentsCh)
+	go scraper.scrapePages(newsCh)
+	go scraper.scrapeComments(commentsCh)
 
 	for {
 		select {
 		case newNews := <-newsCh:
-			// log.Println(len(newNews), "new news.") // DEBUG
-			go services.SaveNews(newNews)
+			if debug {
+				log.Println(len(newNews), "new news.")
+			}
+			go scraper.DatabaseService.SaveNews(newNews)
 		case newComments := <-commentsCh:
-			// log.Println(len(newComments), "new comments.") // DEBUG
-			go services.SaveComments(newComments)
+			if debug {
+				log.Println(len(newComments), "new comments.")
+			}
+			go services.SaveComments(newComments) // Save to the global db instance
 		}
 	}
 }
 
 /********************** News **********************/
 // Starts the download of all News pages. Sends []News on the channel
-func scrapePages(newsCh chan []services.News) {
+func (scraper *Scraper) scrapePages(newsCh chan []services.News) {
 	var wg sync.WaitGroup
 	for {
 		for id := 1; id <= 16; id++ {
 			wg.Add(1)
-			go scrapePage(id, newsCh, &wg)
+			go scrapePage(id, string(scraper.ResourceURL), newsCh, &wg)
 		}
 		wg.Wait()
 	}
 }
 
-// Scrapes one page of News
-func scrapePage(id int, newsCh chan []services.News, wg *sync.WaitGroup) {
+// Scrapes one page of News from a the given ResourceURL on the Scraper type
+func scrapePage(id int, pageURL string, newsCh chan []services.News, wg *sync.WaitGroup) {
 	var news []services.News
 	defer wg.Done()
 
-	url := "https://news.ycombinator.com/news?p=" + strconv.Itoa(id)
+	url := pageURL + strconv.Itoa(id)
 
 	var resp *http.Response
 	operation := func() error {
@@ -343,16 +394,15 @@ func parsePoints(root *html.Node, pointsCh chan []int) {
 
 /******************** Comments ********************/
 // Scrapes the Comments for every News item currently in the database.
-func scrapeComments(commentsCh chan []services.Comment) {
+func (scraper *Scraper) scrapeComments(commentsCh chan []services.Comment) {
 	var wg sync.WaitGroup
 	for {
-		ids := services.ReadNewsIds()
+		ids := scraper.DatabaseService.ReadNewsIds()
 		for _, id := range ids {
 			wg.Add(1)
 			go parseComments(id, commentsCh, &wg)
 		}
 		wg.Wait()
-		log.Println("Potato")
 	}
 }
 
