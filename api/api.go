@@ -17,7 +17,10 @@ import (
 
 // API has a pointer to each of the resource DatabaseServices
 type API struct {
-	Resources []scraper.Resource
+	TopEndpoint    scraper.Resource
+	AskEndpoint    scraper.Resource
+	ShowEndpoint   scraper.Resource
+	NewestEndpoint scraper.Resource
 }
 
 // StartAPI sets up the API and starts it on Heroku port or :8080
@@ -29,20 +32,57 @@ func (api *API) StartAPI(debug bool) {
 	}
 	r := gin.Default()
 
-	for _, resource := range api.Resources {
-		// GET RESOURCE.URL posts from index :from: to index :to:
-		r.GET("/v1"+resource.URL, func(c *gin.Context) {
-			from, err0 := strconv.Atoi(c.Query("from"))
-			to, err1 := strconv.Atoi(c.Query("to"))
-			if err0 != nil || err1 != nil || from <= 0 {
-				c.String(http.StatusBadRequest, "Bad index")
-				return
-			}
+	// GET TOP posts from index :from: to index :to:
+	r.GET("/v1/top", func(c *gin.Context) {
+		from, err0 := strconv.Atoi(c.Query("from"))
+		to, err1 := strconv.Atoi(c.Query("to"))
+		if err0 != nil || err1 != nil || from <= 0 {
+			c.String(http.StatusBadRequest, "Bad index")
+			return
+		}
 
-			news := resource.BackingStore.ReadNews(from, to)
-			c.JSON(http.StatusOK, gin.H{"values": news})
-		})
-	}
+		news := api.TopEndpoint.BackingStore.ReadNews(from, to)
+		c.JSON(http.StatusOK, gin.H{"values": news})
+	})
+
+	// GET ASK posts from index :from: to index :to:
+	r.GET("/v1/ask", func(c *gin.Context) {
+		from, err0 := strconv.Atoi(c.Query("from"))
+		to, err1 := strconv.Atoi(c.Query("to"))
+		if err0 != nil || err1 != nil || from <= 0 {
+			c.String(http.StatusBadRequest, "Bad index")
+			return
+		}
+
+		news := api.AskEndpoint.BackingStore.ReadNews(from, to)
+		c.JSON(http.StatusOK, gin.H{"values": news})
+	})
+
+	// GET SHOw.URL posts from index :from: to index :to:
+	r.GET("/v1/show", func(c *gin.Context) {
+		from, err0 := strconv.Atoi(c.Query("from"))
+		to, err1 := strconv.Atoi(c.Query("to"))
+		if err0 != nil || err1 != nil || from <= 0 {
+			c.String(http.StatusBadRequest, "Bad index")
+			return
+		}
+
+		news := api.ShowEndpoint.BackingStore.ReadNews(from, to)
+		c.JSON(http.StatusOK, gin.H{"values": news})
+	})
+
+	// GET NEWEST posts from index :from: to index :to:
+	r.GET("/v1/", func(c *gin.Context) {
+		from, err0 := strconv.Atoi(c.Query("from"))
+		to, err1 := strconv.Atoi(c.Query("to"))
+		if err0 != nil || err1 != nil || from <= 0 {
+			c.String(http.StatusBadRequest, "Bad index")
+			return
+		}
+
+		news := api.NewestEndpoint.BackingStore.ReadNews(from, to)
+		c.JSON(http.StatusOK, gin.H{"values": news})
+	})
 
 	/** Comment Endpoint **/
 	// Gives the comments from a i to j given the provided news id.

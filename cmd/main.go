@@ -58,10 +58,10 @@ func main() {
 
 	// Setup the API by giving it the databases in which the scrapers dumps their data
 	api := new(api.API)
-	api.Resources = append(api.Resources, topResource)
-	api.Resources = append(api.Resources, askResource)
-	api.Resources = append(api.Resources, showResource)
-	api.Resources = append(api.Resources, newestResource)
+	api.TopEndpoint = topResource
+	api.AskEndpoint = askResource
+	api.ShowEndpoint = showResource
+	api.NewestEndpoint = newestResource
 	go api.StartAPI(*debug)
 
 	// When closed make sure to call Close on all the underlying bolt.DB instances.
