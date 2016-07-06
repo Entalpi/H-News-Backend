@@ -4,15 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/boltdb/bolt"
 	"log"
 	"strconv"
 	"time"
-)
 
-var (
-	newsdb, _ = bolt.Open("news.db", 0644, nil)
-	commdb, _ = bolt.Open("comments.db", 0644, nil)
+	"github.com/boltdb/bolt"
 )
 
 // News represent one news story/item on Hacker News
@@ -27,16 +23,36 @@ type News struct {
 	Comments int32     `json:"comments"` // Number of comments on the News
 }
 
+// DatabaseService wraps a Bolt DB instance with application specific methods
+type DatabaseService struct {
+	newsdb *bolt.DB
+}
+
+// There is a only one single database for all the comments
+var (
+	Commentsdb, _ = bolt.Open("comments-global", 0644, nil)
+)
+
+// NewService creates a two new database on the given filepath with suffixes.
+func NewService(filepath string) *DatabaseService {
+	databaseService := new(DatabaseService)
+	newsdb, err := bolt.Open(filepath+"-news", 0644, nil)
+	if err != nil {
+		log.Panicf("Could not init database for filepath %s", filepath+"-news")
+	}
+	databaseService.newsdb = newsdb
+	return databaseService
+}
+
 // Close closes database connections
-func Close() {
-	newsdb.Close()
-	commdb.Close()
+func (ds *DatabaseService) Close() {
+	ds.newsdb.Close()
 }
 
 // ReadNews ...
-func ReadNews(from int, to int) []News {
+func (ds *DatabaseService) ReadNews(from int, to int) []News {
 	var news []News
-	newsdb.View(func(tx *bolt.Tx) error {
+	ds.newsdb.View(func(tx *bolt.Tx) error {
 		for i := from; i <= to; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
@@ -71,8 +87,8 @@ func ReadNews(from int, to int) []News {
 }
 
 // SaveNews saves the News in the DB
-func SaveNews(news []News) {
-	newsdb.Update(func(tx *bolt.Tx) error {
+func (ds *DatabaseService) SaveNews(news []News) {
+	ds.newsdb.Update(func(tx *bolt.Tx) error {
 		for _, aNews := range news {
 			b, err := tx.CreateBucketIfNotExists([]byte(strconv.Itoa(int(aNews.Rank))))
 			if err != nil {
@@ -109,9 +125,9 @@ func SaveNews(news []News) {
 }
 
 // ReadNewsIds Read all the keys from News db
-func ReadNewsIds() []int32 {
+func (ds *DatabaseService) ReadNewsIds() []int32 {
 	var ids []int32
-	newsdb.View(func(tx *bolt.Tx) error {
+	ds.newsdb.View(func(tx *bolt.Tx) error {
 		for i := 1; i < 480; i++ {
 			b := tx.Bucket([]byte(strconv.Itoa(int(i))))
 			if b == nil {
@@ -139,13 +155,13 @@ type Comment struct {
 	Text     string    `json:"text"`
 }
 
-// SaveComments Dumps the Comments into the commDB as JSON.
+// SaveComments dumps the Comments into the comments database as JSON.
 func SaveComments(comments []Comment) {
 	if len(comments) == 0 {
 		return
 	}
 	newsid := comments[0].ParentID
-	commdb.Update(func(tx *bolt.Tx) error {
+	Commentsdb.Update(func(tx *bolt.Tx) error {
 		k := strconv.Itoa(int(newsid))
 		b, err := tx.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
@@ -167,7 +183,7 @@ func SaveComments(comments []Comment) {
 // ReadComments Returns the comments on the News item specified by the id.
 func ReadComments(newsid int, from int, to int) []Comment {
 	var comments []Comment
-	commdb.View(func(tx *bolt.Tx) error {
+	Commentsdb.View(func(tx *bolt.Tx) error {
 		k := strconv.Itoa(newsid)
 		b := tx.Bucket([]byte(k))
 		if b == nil {
