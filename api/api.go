@@ -4,6 +4,7 @@ package api
 // TODO: Disable debug mode in Sinatra
 
 import (
+	"hnews/scraper"
 	"hnews/services"
 	"io/ioutil"
 	"log"
@@ -14,8 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// API has a pointer to each of the resource DatabaseServices
+type API struct {
+	Resources []scraper.Resource
+}
+
 // StartAPI sets up the API and starts it on Heroku port or :8080
-func StartAPI(debug bool) {
+func (api *API) StartAPI(debug bool) {
 	if debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -23,18 +29,20 @@ func StartAPI(debug bool) {
 	}
 	r := gin.Default()
 
-	// GET TOP posts from index :from: to index :to:
-	r.GET("/v1/top", func(c *gin.Context) {
-		from, err0 := strconv.Atoi(c.Query("from"))
-		to, err1 := strconv.Atoi(c.Query("to"))
-		if err0 != nil || err1 != nil || from <= 0 {
-			c.String(http.StatusBadRequest, "Bad index")
-			return
-		}
+	for _, resource := range api.Resources {
+		// GET RESOURCE.URL posts from index :from: to index :to:
+		r.GET("/v1"+resource.URL, func(c *gin.Context) {
+			from, err0 := strconv.Atoi(c.Query("from"))
+			to, err1 := strconv.Atoi(c.Query("to"))
+			if err0 != nil || err1 != nil || from <= 0 {
+				c.String(http.StatusBadRequest, "Bad index")
+				return
+			}
 
-		news := services.ReadNews(from, to)
-		c.JSON(http.StatusOK, gin.H{"values": news})
-	})
+			news := resource.BackingStore.ReadNews(from, to)
+			c.JSON(http.StatusOK, gin.H{"values": news})
+		})
+	}
 
 	/** Comment Endpoint **/
 	// Gives the comments from a i to j given the provided news id.
