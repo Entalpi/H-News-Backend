@@ -3,22 +3,34 @@
 # Introduction
 The backend is up and running on a hobby dyno over at [Heroku](https://h-news.herokuapp.com).
 
-It consists of one public API written in Go with Gin. 
+It consists of one public API written in Go with Gin and this API wraps calls
+to a other HTTP server running on the same machine at Heroku. This is because
+the other API written in Ruby with Sinatra takes care of all the functionality
+surrounding login and posting stuff to Hacker News.
 
 # API documentation
 
 ## Endpoints
 All endpoints are prefixed with '/v1'
-### News
-'/news'
+### GET /top
 URL params: from: Int, to: Int
 Returns the top stories from H.N front page from index 'from' to index 'to'.
 
-#### Example
-TDA
+### GET /newest
+URL params: from: Int, to: Int
+Returns the newest stories from H.N front page from index 'from' to index 'to'.
 
-### Comments
-TDA
+### GET /show
+URL params: from: Int, to: Int
+Returns the show stories from H.N front page from index 'from' to index 'to'.
+
+### GET /ask
+URL params: from: Int, to: Int
+Returns the ask stories from H.N front page from index 'from' to index 'to'.
+
+### GET /comments
+Each item (news story, comment) at Hacker News has a unique ID and this is used
+to lookup and scrape a specific comment.
 
 #### Example
 TDA
